@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { AgentMessage, Invocation, Receipt, Capability} from "@ucanto/interface"
+import { useState, useEffect, ReactNode } from "react"
+import { AgentMessage, Invocation, Receipt, Capability, Proof, Delegation as DelegationType} from "@ucanto/interface"
 import { isDelegation} from '@ucanto/core'
 import { Request, isChromeRequest } from './types'
 import Tabs from '@mui/material/Tabs';
@@ -25,6 +25,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Paper from '@mui/material/Paper'
 
 import { Fragment } from 'react'
+import { Delegation } from "@ucanto/core/delegation";
 function TableDisplay({ size,  index , children} : React.PropsWithChildren<{size? : "small" | "medium", index : Record<string, React.ReactNode> }>) {
   return (
       <Table size={size}>
@@ -54,8 +55,39 @@ function CapabilityDisplay({ capability } : { capability: Capability }) {
   )
 }
 
+function ShortenAndScroll({children}: {children: ReactNode}){
+  return <div style={{maxWidth: '20em', overflow: 'scroll'}}>{children}</div>
+}
+
+function ProofDisplay({ proof } : { proof: Proof }) {
+  if (isDelegation(proof)) {
+    const capabilities = proof.capabilities.map(capability => <CapabilityDisplay capability={capability} />)
+    const proofs = proof.proofs.map((proof) => <ProofDisplay proof={proof}/>)
+    const index: Record<string, ReactNode> = {
+      Issuer: <ShortenAndScroll>{proof.issuer.did()}</ShortenAndScroll>,
+      Audience: <ShortenAndScroll>{proof.audience.did()}</ShortenAndScroll>,
+      Expiration: proof.expiration.toString(),
+    }
+    return (
+      <TableDisplay size="small" index={index}>
+        <CollapsableRow header="Capabilities">
+          {capabilities}
+        </CollapsableRow>
+        <CollapsableRow header="Proofs">
+          {proofs}
+        </CollapsableRow>
+      </TableDisplay>
+    )
+  } else {
+    return (
+      <pre>{JSON.stringify(proof, null, 2)}</pre>
+    )
+  }
+}
+
 function InvocationTable({invocation} : { invocation : Invocation }) {
   const capabilities = invocation.capabilities.map((capability) => <CapabilityDisplay capability={capability}/>)
+  const proofs = invocation.proofs.map((proof) => <ProofDisplay proof={proof}/>)
   const index = {
     Issuer: shortString(invocation.issuer.did(), 60),
     Audience: invocation.audience.did(),
@@ -64,6 +96,9 @@ function InvocationTable({invocation} : { invocation : Invocation }) {
     <TableDisplay size="small" index={index}>
     <CollapsableRow header="Capabilities">
       {capabilities}
+    </CollapsableRow>
+    <CollapsableRow header="Proofs">
+      {proofs}
     </CollapsableRow>
   </TableDisplay>
   )
