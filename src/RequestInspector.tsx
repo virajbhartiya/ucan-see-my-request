@@ -26,6 +26,8 @@ import Paper from '@mui/material/Paper'
 
 import { Fragment } from 'react'
 import { Delegation } from "@ucanto/core/delegation";
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+ 
 function TableDisplay({ size,  index , children} : React.PropsWithChildren<{size? : "small" | "medium", index : Record<string, React.ReactNode> }>) {
   return (
       <Table size={size}>
@@ -246,6 +248,32 @@ function ResponseDisplay({request} : { request: Request}) {
 }
 
 
+function getRequestStatus(request: Request) {
+  const httpStatus = request.response.status;
+  const isHttpSuccess = httpStatus >= 200 && httpStatus < 300;
+  const isHttpError = httpStatus >= 400;
+  
+  const message = messageFromRequest(request);
+  let hasReceiptError = false;
+  
+  if (typeof message !== 'string' && message.receipts.size > 0) {
+    for (const receipt of message.receipts.values()) {
+      if (receipt.out.error !== undefined) {
+        hasReceiptError = true;
+        break;
+      }
+    }
+  }
+  
+  if (isHttpError || hasReceiptError) {
+    return 'error';
+  } else if (isHttpSuccess && !hasReceiptError) {
+    return 'success';
+  } else {
+    return 'pending';
+  }
+}
+
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
@@ -277,15 +305,32 @@ function CustomTabPanel(props: TabPanelProps) {
 
 function RequestInspector({request} : {request: Request}) {
   const [tabIndex, setTabIndex] = useState(0)
+  const status = getRequestStatus(request);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success': return '#4caf50';
+      case 'error': return '#f44336';
+      case 'pending': return '#ff9800';
+      default: return '#9e9e9e';
+    }
+  };
+
   return (
     <Paper sx={{ height: "100%", overflowY: "scroll" }} elevation={3}>
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', p: 1 }}>
+        <FiberManualRecordIcon 
+          sx={{ 
+            color: getStatusColor(status), 
+            fontSize: 16, 
+            mr: 1 
+          }} 
+        />
         <Tabs value={tabIndex} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Request" {...a11yProps(0)} />
           <Tab label="Response" {...a11yProps(1)} />
