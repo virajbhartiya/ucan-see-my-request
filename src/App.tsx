@@ -30,6 +30,14 @@ function App() {
 
   const [requests, dispatch] = useReducer(reducer, [])
   const [selectedRequest, selectRequest] = useState<Request | null>(null)
+  const [persistOnReload, setPersistOnReload] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('persistOnReload')
+      return stored ? JSON.parse(stored) : false
+    } catch {
+      return false
+    }
+  })
   useEffect(() => {
     let ignore = false
     dispatch({action: "set", requests: []})
@@ -42,6 +50,25 @@ function App() {
       ignore = true
     }
   }, [])
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('persistOnReload', JSON.stringify(persistOnReload))
+    } catch {}
+  }, [persistOnReload])
+  
+  useEffect(() => {
+    const handleNavigated = () => {
+      if (!persistOnReload) {
+        dispatch({ action: 'set', requests: [] })
+        selectRequest(null)
+      }
+    }
+    chrome.devtools.network.onNavigated.addListener(handleNavigated)
+    return () => {
+      chrome.devtools.network.onNavigated.removeListener(handleNavigated)
+    }
+  }, [persistOnReload])
   
   useEffect(() => {
     const listener = (request : chrome.devtools.network.Request) => { dispatch({action: "increment", request}) }
@@ -71,7 +98,13 @@ function App() {
             md: "50%",
           },
         }}>
-          <RequestList requests={requests} selectedRequest={selectedRequest} selectRequest={selectRequest}/>
+          <RequestList 
+            requests={requests} 
+            selectedRequest={selectedRequest} 
+            selectRequest={selectRequest}
+            persistOnReload={persistOnReload}
+            setPersistOnReload={setPersistOnReload}
+          />
         </Box>
         {
           selectedRequest ?
