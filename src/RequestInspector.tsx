@@ -64,7 +64,7 @@ function ProofDisplay({ proof } : { proof: Proof }) {
     const capabilities = proof.capabilities.map(capability => <CapabilityDisplay capability={capability} />)
     const proofs = proof.proofs.map((proof) => <ProofDisplay proof={proof}/>)
     const index: Record<string, ReactNode> = {
-      'Root CID': proof.cid.toString(),
+      'Root CID': <ShortenAndScroll>{proof.cid.toString()}</ShortenAndScroll>,
       Issuer: <ShortenAndScroll>{proof.issuer.did()}</ShortenAndScroll>,
       Audience: <ShortenAndScroll>{proof.audience.did()}</ShortenAndScroll>,
       Expiration: proof.expiration.toString(),
@@ -81,7 +81,7 @@ function ProofDisplay({ proof } : { proof: Proof }) {
     )
   } else {
     const index: Record<string, ReactNode> = {
-      'Root CID': proof.toString(),
+      'Root CID': <ShortenAndScroll>{proof.toString()}</ShortenAndScroll>,
     }
     return <TableDisplay size="small" index={index} />
   }
