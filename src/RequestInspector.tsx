@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import {shortString, bigIntSafe, messageFromRequest, decodeMessage, formatError} from './util'
+import {shortString, bigIntSafe, messageFromRequest, decodeMessage, formatError, getRequestStatus, getStatusColor} from './util'
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -248,31 +248,6 @@ function ResponseDisplay({request} : { request: Request}) {
 }
 
 
-function getRequestStatus(request: Request) {
-  const httpStatus = request.response.status;
-  const isHttpSuccess = httpStatus >= 200 && httpStatus < 300;
-  const isHttpError = httpStatus >= 400;
-  
-  const message = messageFromRequest(request);
-  let hasReceiptError = false;
-  
-  if (typeof message !== 'string' && message.receipts.size > 0) {
-    for (const receipt of message.receipts.values()) {
-      if (receipt.out.error !== undefined) {
-        hasReceiptError = true;
-        break;
-      }
-    }
-  }
-  
-  if (isHttpError || hasReceiptError) {
-    return 'error';
-  } else if (isHttpSuccess && !hasReceiptError) {
-    return 'success';
-  } else {
-    return 'pending';
-  }
-}
 
 function a11yProps(index: number) {
   return {
@@ -311,14 +286,7 @@ function RequestInspector({request} : {request: Request}) {
     setTabIndex(newValue);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return '#4caf50';
-      case 'error': return '#f44336';
-      case 'pending': return '#ff9800';
-      default: return '#9e9e9e';
-    }
-  };
+  
 
   return (
     <Paper sx={{ height: "100%", overflowY: "scroll" }} elevation={3}>

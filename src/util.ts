@@ -43,3 +43,42 @@ export function formatError(error: any): string {
     return String(error); // Fallback for non-JSON errors
   }
 }
+
+export function getRequestStatus(request: Request): string {
+  const httpStatus = request.response.status
+  const isHttpSuccess = httpStatus >= 200 && httpStatus < 300
+  const isHttpError = httpStatus >= 400
+
+  const message = messageFromRequest(request)
+  let hasReceiptError = false
+
+  if (typeof message !== 'string' && message.receipts.size > 0) {
+    for (const receipt of message.receipts.values()) {
+      if (receipt.out.error !== undefined) {
+        hasReceiptError = true
+        break
+      }
+    }
+  }
+
+  if (isHttpError || hasReceiptError) {
+    return 'error'
+  } else if (isHttpSuccess && !hasReceiptError) {
+    return 'success'
+  } else {
+    return 'pending'
+  }
+}
+
+export function getStatusColor(status: string): string {
+  switch (status) {
+    case 'success':
+      return '#4caf50'
+    case 'error':
+      return '#f44336'
+    case 'pending':
+      return '#ff9800'
+    default:
+      return '#9e9e9e'
+  }
+}
