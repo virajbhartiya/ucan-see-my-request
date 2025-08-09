@@ -19,13 +19,13 @@ function RequestEntry({ request, selectedRequest, selectRequest } : {request: Re
   )
 }
 
-function RequestList({ requests, selectedRequest, selectRequest, persistOnReload, setPersistOnReload} : { requests: Request[], selectedRequest: Request | null, selectRequest: (request: Request) => void, persistOnReload: boolean, setPersistOnReload: (value:boolean) => void }) {
+function RequestList({ requests, selectedRequest, selectRequest } : { requests: Request[], selectedRequest: Request | null, selectRequest: (request: Request) => void }) {
   const requestItems = requests.filter(isCarRequest).map(request => <RequestEntry selectedRequest={selectedRequest} selectRequest={selectRequest} request={request} />)
   return (
     <TableContainer sx={{height: "100%", overflowY: "scroll"}}>
     <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1 }}>
       <FormControlLabel
-        control={<Switch checked={persistOnReload} onChange={(e) => setPersistOnReload(e.target.checked)} />}
+        control={<Switch defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('persistOnReload') || 'false') } catch { return false } })()} onChange={(e) => { try { localStorage.setItem('persistOnReload', JSON.stringify(e.target.checked)) } catch {} }} />}
         label="Persist across reloads"
       />
     </Box>
