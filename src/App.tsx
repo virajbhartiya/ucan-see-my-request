@@ -45,11 +45,8 @@ function App() {
   
   useEffect(() => {
     const handleNavigated = () => {
-      let shouldPersist = false
-      try {
-        const stored = localStorage.getItem('persistOnReload')
-        shouldPersist = stored ? JSON.parse(stored) : false
-      } catch {}
+      const stored = localStorage.getItem('persistOnReload')
+      const shouldPersist = stored ? JSON.parse(stored) : false
       if (!shouldPersist) {
         dispatch({ action: 'set', requests: [] })
         selectRequest(null)
