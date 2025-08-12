@@ -9,13 +9,10 @@ import TableRow from '@mui/material/TableRow';
 import { isCarRequest, messageFromRequest, getRequestStatus, getStatusColor } from "./util";
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
-
 function RequestEntry({ request, selectedRequest, selectRequest } : {request: Request, selectedRequest: Request | null, selectRequest: (request: Request) => void}) {
   const message = messageFromRequest(request)
   const status = getRequestStatus(request);
   
-  
-
   return (
     <TableRow onClick={() => selectRequest(request)} hover selected={request === selectedRequest}>
       <TableCell>

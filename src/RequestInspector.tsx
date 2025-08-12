@@ -247,8 +247,6 @@ function ResponseDisplay({request} : { request: Request}) {
   return <ResponseBodyDisplay body={body} />
 }
 
-
-
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
@@ -285,8 +283,6 @@ function RequestInspector({request} : {request: Request}) {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
-
-  
 
   return (
     <Paper sx={{ height: "100%", overflowY: "scroll" }} elevation={3}>
