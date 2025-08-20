@@ -33,7 +33,7 @@ function RequestList({ requests, selectedRequest, selectRequest} : { requests: R
       <TableHead>
         <TableCell>URL</TableCell>
         <TableCell>Capabilities</TableCell>
-        <TableCell>Round Trip Time</TableCell>
+        <TableCell><abbr title="Round Trip Time">RTT</abbr></TableCell>
       </TableHead>
       <TableBody>
       { requestItems }
