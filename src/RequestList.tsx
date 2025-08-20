@@ -8,13 +8,18 @@ import TableRow from '@mui/material/TableRow';
 import Box from '@mui/material/Box';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { isCarRequest, messageFromRequest } from "./util";
+import { isCarRequest, messageFromRequest, getRequestTiming, formatTiming } from "./util";
+
 function RequestEntry({ request, selectedRequest, selectRequest } : {request: Request, selectedRequest: Request | null, selectRequest: (request: Request) => void}) {
   const message = messageFromRequest(request)
+  const timing = getRequestTiming(request)
+  const formattedTiming = formatTiming(timing)
+  
   return (
     <TableRow onClick={() => selectRequest(request)} hover selected={request === selectedRequest}>
       <TableCell>{request.request.url}</TableCell>
       <TableCell>{ typeof message === 'string' ? message : message.invocations.flatMap((invocation) => invocation.capabilities.map((capability => capability.can))).join(", ")}</TableCell>
+      <TableCell>{formattedTiming}</TableCell>
     </TableRow>
   )
 }
@@ -43,6 +48,7 @@ function RequestList({ requests, selectedRequest, selectRequest } : { requests: 
       <TableHead>
         <TableCell>URL</TableCell>
         <TableCell>Capabilities</TableCell>
+        <TableCell><abbr title="Round Trip Time">RTT</abbr></TableCell>
       </TableHead>
       <TableBody>
       { requestItems }
