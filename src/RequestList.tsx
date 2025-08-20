@@ -15,7 +15,7 @@ function RequestEntry({ request, selectedRequest, selectRequest } : {request: Re
   
   return (
     <TableRow onClick={() => selectRequest(request)} hover selected={request === selectedRequest}>
-      <TableCell>
+      <TableCell align="center">
         <FiberManualRecordIcon 
           sx={{ 
             color: getStatusColor(status), 
@@ -39,7 +39,7 @@ function RequestList({ requests, selectedRequest, selectRequest} : { requests: R
       size={'medium'}
     >
       <TableHead>
-        <TableCell>Status</TableCell>
+        <TableCell align="center">Status</TableCell>
         <TableCell>URL</TableCell>
         <TableCell>Capabilities</TableCell>
       </TableHead>
