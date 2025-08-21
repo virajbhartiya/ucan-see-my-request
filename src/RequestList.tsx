@@ -6,6 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Box from '@mui/material/Box';
 import { isCarRequest, messageFromRequest, getRequestStatus, getStatusColor } from "./util";
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
@@ -15,15 +16,18 @@ function RequestEntry({ request, selectedRequest, selectRequest } : {request: Re
   
   return (
     <TableRow onClick={() => selectRequest(request)} hover selected={request === selectedRequest}>
-      <TableCell align="center">
-        <FiberManualRecordIcon 
-          sx={{ 
-            color: getStatusColor(status), 
-            fontSize: 16 
-          }} 
-        />
+      <TableCell>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <FiberManualRecordIcon 
+            sx={{ 
+              color: getStatusColor(status), 
+              fontSize: 16,
+              mr: 1
+            }} 
+          />
+          {request.request.url}
+        </Box>
       </TableCell>
-      <TableCell>{request.request.url}</TableCell>
       <TableCell>{ typeof message === 'string' ? message : message.invocations.flatMap((invocation) => invocation.capabilities.map((capability => capability.can))).join(", ")}</TableCell>
     </TableRow>
   )
@@ -39,7 +43,6 @@ function RequestList({ requests, selectedRequest, selectRequest} : { requests: R
       size={'medium'}
     >
       <TableHead>
-        <TableCell align="center">Status</TableCell>
         <TableCell>URL</TableCell>
         <TableCell>Capabilities</TableCell>
       </TableHead>
