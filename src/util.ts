@@ -1,6 +1,7 @@
 import { AgentMessage} from "@ucanto/interface"
 import { CAR, Message } from '@ucanto/core'
-import { Request } from './types'
+import { Request, isChromeRequest } from './types'
+
 
 function convertBinaryStringToUint8Array(bStr : string) {
 	const u8_array = new Uint8Array(bStr.length);
@@ -42,4 +43,49 @@ export function formatError(error: any): string {
   } catch {
     return String(error); // Fallback for non-JSON errors
   }
+}
+
+export function getRequestTiming(request: Request): number | null {
+  if (isChromeRequest(request)) {
+    // For Chrome DevTools network requests, use the time property which represents total duration
+    return request.time || null;
+  } else {
+    // For HAR entries, calculate from timings
+    const harEntry = request as chrome.devtools.network.HAREntry;
+    if (harEntry.time) {
+      return harEntry.time;
+    }
+    if (harEntry.timings && harEntry.timings.receive && harEntry.timings.wait && harEntry.timings.send) {
+      return harEntry.timings.send + harEntry.timings.wait + harEntry.timings.receive;
+    }
+  }
+  return null;
+}
+
+export function formatTiming(timeMs: number | null): string {
+  if (timeMs === null || timeMs === undefined) {
+    return '-';
+  }
+  
+  if (timeMs < 1000) {
+    return `${Math.round(timeMs)}ms`;
+  }
+  
+  const seconds = timeMs / 1000;
+  
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`;
+  }
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  if (minutes < 60) {
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  }
+  
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
 }

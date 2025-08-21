@@ -7,7 +7,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { isCarRequest, messageFromRequest } from "./util";
+import { isCarRequest, messageFromRequest, getRequestTiming, formatTiming } from "./util";
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
@@ -15,6 +15,9 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DownloadIcon from '@mui/icons-material/Download';
+import Box from '@mui/material/Box';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 function binaryStringToUint8Array(bStr : string) {
   const u8_array = new Uint8Array(bStr.length);
@@ -133,12 +136,17 @@ function DownloadMenu({ request }: { request: Request }) {
     </>
   )
 }
+
 function RequestEntry({ request, selectedRequest, selectRequest } : {request: Request, selectedRequest: Request | null, selectRequest: (request: Request) => void}) {
   const message = messageFromRequest(request)
+  const timing = getRequestTiming(request)
+  const formattedTiming = formatTiming(timing)
+  
   return (
     <TableRow onClick={() => selectRequest(request)} hover selected={request === selectedRequest}>
       <TableCell>{request.request.url}</TableCell>
       <TableCell>{ typeof message === 'string' ? message : message.invocations.flatMap((invocation) => invocation.capabilities.map((capability => capability.can))).join(", ")}</TableCell>
+      <TableCell>{formattedTiming}</TableCell>
       <TableCell align="right" width={72}>
         <DownloadMenu request={request} />
       </TableCell>
@@ -146,10 +154,22 @@ function RequestEntry({ request, selectedRequest, selectRequest } : {request: Re
   )
 }
 
-function RequestList({ requests, selectedRequest, selectRequest} : { requests: Request[], selectedRequest: Request | null, selectRequest: (request: Request) => void }) {
+function RequestList({ requests, selectedRequest, selectRequest } : { requests: Request[], selectedRequest: Request | null, selectRequest: (request: Request) => void }) {
+  const defaultChecked = JSON.parse(localStorage.getItem('persistOnReload') || 'false')
+
+  const handlePersistChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    localStorage.setItem('persistOnReload', JSON.stringify(e.target.checked))
+  }
+
   const requestItems = requests.filter(isCarRequest).map((request, idx) => <RequestEntry key={`${request.request.url}-${idx}`} selectedRequest={selectedRequest} selectRequest={selectRequest} request={request} />)
   return (
     <TableContainer sx={{height: "100%", overflowY: "scroll"}}>
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1 }}>
+      <FormControlLabel
+        control={<Switch defaultChecked={defaultChecked} onChange={handlePersistChange} />}
+        label="Persist across reloads"
+      />
+    </Box>
     <Table
       stickyHeader
       aria-labelledby="tableTitle"
@@ -158,6 +178,7 @@ function RequestList({ requests, selectedRequest, selectRequest} : { requests: R
       <TableHead>
         <TableCell>URL</TableCell>
         <TableCell>Capabilities</TableCell>
+        <TableCell><abbr title="Round Trip Time">RTT</abbr></TableCell>
         <TableCell align="right">Save</TableCell>
       </TableHead>
       <TableBody>
